@@ -92,7 +92,6 @@ export default {
       this.isFold = !this.isFold
     },
     handleClick () {
-      console.log(1)
     }
   }
 }

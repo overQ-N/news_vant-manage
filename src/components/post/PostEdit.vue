@@ -2,7 +2,7 @@
   <div>
     <el-breadcrumb separator="/">
       <el-breadcrumb-item>首页</el-breadcrumb-item>
-      <el-breadcrumb-item>文章列表</el-breadcrumb-item>
+      <el-breadcrumb-item>文章编辑</el-breadcrumb-item>
     </el-breadcrumb>
     <el-card class="box-card">
       <el-form ref="postFormRef" :model="form" label-width="80px" :rules="rules">
@@ -65,12 +65,11 @@
           </el-upload>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="onSubmit">立即创建</el-button>
+          <el-button type="primary" @click="onSubmit">确认编辑</el-button>
         </el-form-item>
       </el-form>
     </el-card>
-    <!-- 预览图片的弹出框 -->
-    <el-dialog
+     <el-dialog
   :visible.sync="ImgPreviewDialogVisible"
   width="50%"
   >
@@ -90,13 +89,13 @@ export default {
         content: '',
         categories: [],
         cover: [],
-        // 选中的分类
         checkedCategory: []
       },
       // 是否展示预览图片
       ImgPreviewDialogVisible: false,
       // 预览图片的路径
       previewImgSrc: '',
+      // 选中的分类
       // 所有分类
       category: [],
       token: '',
@@ -113,7 +112,7 @@ export default {
             required: true, message: '请输入文章内容'
           }
         ],
-        category: [
+        checkedCategory: [
           {
             required: true, message: '请选择文章类别'
           }
@@ -123,6 +122,7 @@ export default {
   },
   created () {
     this.getCategories()
+    this.getPost()
     this.getToken()
   },
   components: {
@@ -133,8 +133,6 @@ export default {
     handlePictureCardPreview (file) {
       this.previewImgSrc = file.url
       this.ImgPreviewDialogVisible = true
-
-      //
     },
     // 删除图片
     handleRemove (file, fileList) {
@@ -154,25 +152,43 @@ export default {
     handleVideoSuccess (file, res, fileList) {
       this.form.content = res.data.url
     },
+    // 获取文章 回显文章数据
+    async getPost () {
+      const { data: res } = await this.$axios.get('/post/' + this.$route.params.id)
+      const checkedCate = res.data.categories.map(v => v.id)
+      this.fileList = res.data.cover.map(v => {
+        v.url = this.$axios.defaults.baseURL + v.url
+        delete v.uid
+        return v
+      })
+      console.log(this.fileList)
+
+      // this.form.
+      this.fileList = res.data.cover
+      this.form = {
+        title: res.data.title,
+        content: res.data.content,
+        type: res.data.type,
+        checkedCategory: checkedCate
+      }
+    },
     // 创建文章
     onSubmit () {
       this.form.categories = this.form.checkedCategory.map(v => {
         return { id: v }
       })
-      console.log(this.form.categories)
-
       this.form.cover = this.fileList.map(v => {
-        return { id: v.response.data.id }
+        return { id: v.id || v.response.data.id }
       })
       this.$refs.postFormRef.validate(async valid => {
         if (!valid) return false
-        const { data: res } = await this.$axios.post('/post', this.form)
-        if (res.message === '文章发布成功') {
-          this.$message.success('文章发布成功')
+        const { data: res } = await this.$axios.post('/post_update/' + this.$route.params.id, this.form)
+        if (res.message === '文章编辑成功') {
+          this.$message.success('文章编辑成功')
           this.$refs.postFormRef.resetFields()
           this.fileList = []
         } else {
-          this.$message.error('文章发布失败')
+          this.$message.error('文章编辑失败')
         }
       })
     },
@@ -199,6 +215,8 @@ export default {
         data: formData
       })
         .then(result => {
+          console.log(result)
+
           const url = result.data.data.url // Get url from response
           Editor.insertEmbed(cursorLocation, 'image', this.$axios.defaults.baseURL + url)
           resetUploader()

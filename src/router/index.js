@@ -18,7 +18,8 @@ const routes = [
     component: () => import('@/views/Index'),
     children: [
       { path: '/post-list', component: () => import('@/components/post/PostList') },
-      { path: '/post-release', component: () => import('@/components/post/PostRelease') }
+      { path: '/post-release', component: () => import('@/components/post/PostRelease') },
+      { path: '/post-edit/:id', component: () => import('@/components/post/PostEdit') }
     ]
   }
 ]

@@ -30,7 +30,8 @@
         >{{moment(props.row.create_date).format('YYYY-MM-DD hh:mm:ss')}}</el-table-column>
         <el-table-column prop="user.nickname" label="发布者"></el-table-column>
         <el-table-column label="操作" #default="props" width="180">
-          <el-button size="mini" type="warning" icon="el-icon-edit" :data-a="props">编辑</el-button>
+          <!-- @click="editPostById(props.row.id)" -->
+          <router-link :to='"/post-edit/"+props.row.id'><el-button size="mini" type="warning" icon="el-icon-edit" >编辑</el-button></router-link>
           <el-button
             size="mini"
             type="danger"
@@ -84,6 +85,13 @@ export default {
 
       this.total = res.total
     },
+    // 文章编辑
+    // editPostById (id) {
+    //   this.$router.push({
+    //     path: '/post-edit',
+    //     params: { id }
+    //   })
+    // },
     // 监听条数大小的改变
     handleSizeChange (newSize) {
       this.queryInfo.pageSize = newSize
